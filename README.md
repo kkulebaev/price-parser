@@ -1,17 +1,18 @@
 # price-parser
 
-Simple cron-friendly price scraper that stores price history in Postgres.
+Cron-friendly price scraper that stores price history in Postgres.
 
 ## What it does
 - Fetches `PRODUCT_URL`
 - Extracts current/old price (best-effort)
+- Ensures DB schema on first run
 - Writes to Postgres tables:
   - `tracked_products`
   - `price_history`
 
 ## Requirements
-- Node.js 22
-- Postgres database
+- Go 1.22+ (for local build)
+- Postgres
 
 ## Environment variables
 - `PRODUCT_URL` (required)
@@ -19,20 +20,15 @@ Simple cron-friendly price scraper that stores price history in Postgres.
 
 ## Run locally
 ```bash
-npm ci
-cp .env.example .env
-# fill env vars
-npm run run
+go run .
 ```
 
 ## Deploy on Render
 Recommended: **Render Postgres** + **Cron Job**.
 
 Cron Job settings:
-- Build command: `npm ci`
-- Start command: `node index.js`
+- Build command: `go build -o price-parser .`
+- Start command: `./price-parser`
 
 Schedule:
 - once a day (e.g. `0 3 * * *`)
-
-Note: script runs on every execution (no internal skip).
