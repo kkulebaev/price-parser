@@ -29,8 +29,9 @@ npm run run
 ## Deploy on Render
 Recommended: **Render Postgres** + **Cron Job**.
 
-Cron command:
-- `npm ci && node index.js`
+Cron Job settings:
+- Build command: `npm ci`
+- Start command: `node index.js`
 
 Schedule:
 - once a day (e.g. `0 3 * * *`)

@@ -26,6 +26,33 @@ function parsePriceToInt(text) {
   return digits ? Number(digits) : null;
 }
 
+async function ensureSchema(client) {
+  // Minimal schema to run from a blank database
+  await client.query(`
+    CREATE TABLE IF NOT EXISTS tracked_products (
+      url TEXT PRIMARY KEY,
+      title TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+  `);
+
+  await client.query(`
+    CREATE TABLE IF NOT EXISTS price_history (
+      id BIGSERIAL PRIMARY KEY,
+      url TEXT NOT NULL REFERENCES tracked_products(url) ON DELETE CASCADE,
+      price_current INTEGER,
+      price_old INTEGER,
+      raw JSONB,
+      checked_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+  `);
+
+  await client.query(`
+    CREATE INDEX IF NOT EXISTS idx_price_history_url_checked_at
+    ON price_history(url, checked_at DESC);
+  `);
+}
+
 async function getLastCheck(client) {
   const r = await client.query(
     `SELECT price_current, price_old, checked_at
@@ -141,6 +168,7 @@ async function main() {
   await client.connect();
 
   try {
+    await ensureSchema(client);
     const last = await getLastCheck(client);
     if (last) {
       const hoursSince =
