@@ -16,7 +16,6 @@ Simple cron-friendly price scraper that stores price history in Postgres.
 ## Environment variables
 - `PRODUCT_URL` (required)
 - `DATABASE_URL` (required)
-- `MIN_INTERVAL_HOURS` (optional, default `72`)
 
 ## Run locally
 ```bash
@@ -35,3 +34,5 @@ Cron Job settings:
 
 Schedule:
 - once a day (e.g. `0 3 * * *`)
+
+Note: script runs on every execution (no internal skip).

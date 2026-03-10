@@ -4,7 +4,6 @@ const { Client } = pg;
 
 const PRODUCT_URL = process.env.PRODUCT_URL;
 const DATABASE_URL = process.env.DATABASE_URL;
-const MIN_INTERVAL_HOURS = Number(process.env.MIN_INTERVAL_HOURS ?? 72);
 
 if (!PRODUCT_URL) throw new Error("PRODUCT_URL is required");
 if (!DATABASE_URL) throw new Error("DATABASE_URL is required");
@@ -170,16 +169,6 @@ async function main() {
   try {
     await ensureSchema(client);
     const last = await getLastCheck(client);
-    if (last) {
-      const hoursSince =
-        (Date.now() - new Date(last.checked_at).getTime()) / (1000 * 60 * 60);
-      if (hoursSince < MIN_INTERVAL_HOURS) {
-        console.log(
-          `SKIP: last check ${hoursSince.toFixed(1)}h ago (<${MIN_INTERVAL_HOURS}h)`
-        );
-        return;
-      }
-    }
 
     const s = await scrape();
 
