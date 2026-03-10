@@ -57,7 +57,6 @@ CREATE TABLE price_history (
   url TEXT NOT NULL REFERENCES tracked_products(url) ON DELETE CASCADE,
   price_current INTEGER,
   price_old INTEGER,
-  raw JSONB,
   checked_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
