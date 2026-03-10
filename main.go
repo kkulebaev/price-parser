@@ -212,11 +212,11 @@ func nullIfEmpty(s string) any {
 	return s
 }
 
-func insertHistory(ctx context.Context, db *sql.DB, url string, pc *int, po *int, raw any) error {
+func insertHistory(ctx context.Context, db *sql.DB, url string, pc *int, po *int) error {
 	_, err := db.ExecContext(ctx, `
-		INSERT INTO price_history(url, price_current, price_old, raw)
-		VALUES ($1, $2, $3, $4)
-	`, url, pc, po, raw)
+		INSERT INTO price_history(url, price_current, price_old)
+		VALUES ($1, $2, $3)
+	`, url, pc, po)
 	return err
 }
 
@@ -267,7 +267,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := insertHistory(ctx, db, productURL, s.PriceCurrent, s.PriceOld, nil); err != nil {
+	if err := insertHistory(ctx, db, productURL, s.PriceCurrent, s.PriceOld); err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR: insert history: %v\n", err)
 		os.Exit(1)
 	}
