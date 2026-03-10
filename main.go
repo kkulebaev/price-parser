@@ -170,32 +170,6 @@ func scrape(ctx context.Context, url string) (*scrapeResult, error) {
 	return &scrapeResult{Title: title, PriceCurrent: pc, PriceOld: po, Raw: ""}, nil
 }
 
-func ensureSchema(ctx context.Context, db *sql.DB) error {
-	stmts := []string{
-		`CREATE TABLE IF NOT EXISTS tracked_products (
-			url TEXT PRIMARY KEY,
-			title TEXT,
-			created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-		);`,
-		`CREATE TABLE IF NOT EXISTS price_history (
-			id BIGSERIAL PRIMARY KEY,
-			url TEXT NOT NULL REFERENCES tracked_products(url) ON DELETE CASCADE,
-			price_current INTEGER,
-			price_old INTEGER,
-			raw JSONB,
-			checked_at TIMESTAMPTZ NOT NULL DEFAULT now()
-		);`,
-		`CREATE INDEX IF NOT EXISTS idx_price_history_url_checked_at
-		 ON price_history(url, checked_at DESC);`,
-	}
-	for _, s := range stmts {
-		if _, err := db.ExecContext(ctx, s); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 type lastCheck struct {
 	PriceCurrent sql.NullInt64
 	PriceOld     sql.NullInt64
@@ -273,11 +247,6 @@ func main() {
 
 	if err := db.PingContext(ctx); err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR: db ping: %v\n", err)
-		os.Exit(1)
-	}
-
-	if err := ensureSchema(ctx, db); err != nil {
-		fmt.Fprintf(os.Stderr, "ERROR: ensure schema: %v\n", err)
 		os.Exit(1)
 	}
 
