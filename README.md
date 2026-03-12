@@ -3,9 +3,9 @@
 </p>
 
 <p align="center">
-  <img alt="go" src="https://img.shields.io/badge/go-1.22%2B-00ADD8?logo=go&logoColor=white" />
+  <img alt="node" src="https://img.shields.io/badge/node-18%2B-339933?logo=node.js&logoColor=white" />
   <img alt="postgres" src="https://img.shields.io/badge/db-PostgreSQL-336791?logo=postgresql&logoColor=white" />
-  <img alt="render" src="https://img.shields.io/badge/deploy-Render-46E3B7" />
+  <img alt="netlify" src="https://img.shields.io/badge/deploy-Netlify-00C7B7?logo=netlify&logoColor=white" />
   <img alt="license" src="https://img.shields.io/badge/license-MIT-informational" />
 </p>
 
@@ -27,20 +27,27 @@ Cron-friendly price scraper that stores price history in Postgres.
 - `PRODUCT_URL` (required)
 - `DATABASE_URL` (required)
 
-## Run locally
+## Local development
+Install dependencies:
+
 ```bash
-go run .
+npm i
 ```
 
-## Deploy on Render (recommended)
-Use **Render Postgres** + **Render Cron Job**.
+Run Netlify dev server:
 
-Cron Job settings:
-- Build command: `go build -o price-parser .`
-- Start command: `./price-parser`
+```bash
+npm run dev
+```
 
-Schedule:
-- once a day (e.g. `0 3 * * *`)
+## Deploy on Netlify
+1) Connect this repo to Netlify
+2) Add environment variables in Netlify:
+   - `PRODUCT_URL`
+   - `DATABASE_URL`
+3) Deploy
+
+Scheduled runs are configured in `netlify.toml` via Netlify Scheduled Functions.
 
 ## DB schema
 Create tables manually (once) in your Postgres:
