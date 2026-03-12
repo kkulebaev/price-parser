@@ -45,9 +45,13 @@ npm run dev
 2) Add environment variables in Netlify:
    - `PRODUCT_URL`
    - `DATABASE_URL`
+     - for Prisma Postgres рекомендовано: `...?sslmode=require&uselibpqcompat=true`
 3) Deploy
 
 Scheduled runs are configured in `netlify.toml` via Netlify Scheduled Functions.
+
+Current schedule:
+- **10:00 MSK (UTC+3)** → `07:00 UTC` (`0 7 * * *`)
 
 ## DB schema
 Create tables manually (once) in your Postgres:
