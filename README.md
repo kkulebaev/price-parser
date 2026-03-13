@@ -72,8 +72,7 @@ CREATE TABLE tracked_products (
 CREATE TABLE price_history (
   id BIGSERIAL PRIMARY KEY,
   url TEXT NOT NULL REFERENCES tracked_products(url) ON DELETE CASCADE,
-  price_current INTEGER,
-  price_old INTEGER,
+  price INTEGER,
   checked_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 

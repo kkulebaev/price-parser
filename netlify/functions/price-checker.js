@@ -106,7 +106,7 @@ async function scrape(url) {
 async function getLastCheck(client, url) {
   const r = await client.query(
     `
-    SELECT price_current, price_old, checked_at
+    SELECT price, checked_at
     FROM price_history
     WHERE url = $1
     ORDER BY checked_at DESC
@@ -130,13 +130,13 @@ async function ensureProduct(client, url, title) {
   )
 }
 
-async function insertHistory(client, url, pc, po) {
+async function insertHistory(client, url, price) {
   await client.query(
     `
-    INSERT INTO price_history(url, price_current, price_old)
-    VALUES ($1, $2, $3)
+    INSERT INTO price_history(url, price)
+    VALUES ($1, $2)
   `,
-    [url, pc ?? null, po ?? null]
+    [url, price ?? null]
   )
 }
 
@@ -173,11 +173,10 @@ function formatOneResult({ url, scraped, last, changed, error }) {
   else lines.push('BigGeek: товар')
 
   if (s.priceCurrent != null) lines.push(`Цена: ${fmtRub(s.priceCurrent)} ₽`)
-  if (s.priceOld != null) lines.push(`Старая: ${fmtRub(s.priceOld)} ₽`)
 
-  if (last && last.price_current != null && last.checked_at) {
+  if (last && last.price != null && last.checked_at) {
     const ts = new Date(last.checked_at).toISOString().slice(0, 16).replace('T', ' ')
-    lines.push(`Было: ${fmtRub(Number(last.price_current))} ₽ (${ts} UTC)`)
+    lines.push(`Было: ${fmtRub(Number(last.price))} ₽ (${ts} UTC)`)
   } else {
     lines.push('Это первая запись в историю')
   }
@@ -212,24 +211,14 @@ exports.handler = async () => {
         const s = await scrape(url)
 
         await ensureProduct(client, url, s.title)
-        await insertHistory(client, url, s.priceCurrent, s.priceOld)
+        await insertHistory(client, url, s.priceCurrent)
 
         let changed = false
         if (!last) {
           changed = true
         } else {
-          const lastPc = last.price_current
-          const lastPo = last.price_old
-
-          if (lastPc == null || s.priceCurrent == null || Number(lastPc) !== s.priceCurrent) changed = true
-
-          const lastPoValid = lastPo != null
-          const poValid = s.priceOld != null
-          if (lastPoValid !== poValid) {
-            changed = true
-          } else if (lastPoValid && poValid && Number(lastPo) !== s.priceOld) {
-            changed = true
-          }
+          const lastPrice = last.price
+          if (lastPrice == null || s.priceCurrent == null || Number(lastPrice) !== s.priceCurrent) changed = true
         }
 
         results.push(formatOneResult({ url, scraped: s, last, changed }))
