@@ -149,8 +149,46 @@ function fmtRub(v) {
   return parts.join(' ')
 }
 
+async function listEnabledLinks(client) {
+  const r = await client.query(
+    `
+    SELECT url
+    FROM product_links
+    WHERE enabled = true
+    ORDER BY id ASC
+  `
+  )
+  return r.rows.map((x) => x.url).filter(Boolean)
+}
+
+function formatOneResult({ url, scraped, last, changed, error }) {
+  if (error) {
+    return [`ERROR: ${url}`, String(error)].join('\n')
+  }
+
+  const s = scraped
+
+  const lines = []
+  if (s.title) lines.push(`BigGeek: ${s.title}`)
+  else lines.push('BigGeek: товар')
+
+  if (s.priceCurrent != null) lines.push(`Цена: ${fmtRub(s.priceCurrent)} ₽`)
+  if (s.priceOld != null) lines.push(`Старая: ${fmtRub(s.priceOld)} ₽`)
+
+  if (last && last.price_current != null && last.checked_at) {
+    const ts = new Date(last.checked_at).toISOString().slice(0, 16).replace('T', ' ')
+    lines.push(`Было: ${fmtRub(Number(last.price_current))} ₽ (${ts} UTC)`)
+  } else {
+    lines.push('Это первая запись в историю')
+  }
+
+  lines.push(changed ? 'Изменилась с прошлого раза' : 'Без изменений')
+  lines.push(url)
+
+  return lines.join('\n')
+}
+
 exports.handler = async () => {
-  const productURL = mustEnv('PRODUCT_URL')
   const dsn = mustEnv('DATABASE_URL')
 
   const client = new Client({ connectionString: dsn })
@@ -158,50 +196,51 @@ exports.handler = async () => {
   try {
     await client.connect()
 
-    const last = await getLastCheck(client, productURL)
-    const s = await scrape(productURL)
-
-    await ensureProduct(client, productURL, s.title)
-    await insertHistory(client, productURL, s.priceCurrent, s.priceOld)
-
-    let changed = false
-    if (!last) {
-      changed = true
-    } else {
-      const lastPc = last.price_current
-      const lastPo = last.price_old
-
-      if (lastPc == null || s.priceCurrent == null || Number(lastPc) !== s.priceCurrent) changed = true
-
-      const lastPoValid = lastPo != null
-      const poValid = s.priceOld != null
-      if (lastPoValid !== poValid) {
-        changed = true
-      } else if (lastPoValid && poValid && Number(lastPo) !== s.priceOld) {
-        changed = true
+    const urls = await listEnabledLinks(client)
+    if (urls.length === 0) {
+      return {
+        statusCode: 200,
+        body: 'SKIP: no enabled links in product_links',
       }
     }
 
-    const lines = []
-    if (s.title) lines.push(`BigGeek: ${s.title}`)
-    else lines.push('BigGeek: товар')
+    const results = []
 
-    if (s.priceCurrent != null) lines.push(`Цена: ${fmtRub(s.priceCurrent)} ₽`)
-    if (s.priceOld != null) lines.push(`Старая: ${fmtRub(s.priceOld)} ₽`)
+    for (const url of urls) {
+      try {
+        const last = await getLastCheck(client, url)
+        const s = await scrape(url)
 
-    if (last && last.price_current != null && last.checked_at) {
-      const ts = new Date(last.checked_at).toISOString().slice(0, 16).replace('T', ' ')
-      lines.push(`Было: ${fmtRub(Number(last.price_current))} ₽ (${ts} UTC)`)
-    } else {
-      lines.push('Это первая запись в историю')
+        await ensureProduct(client, url, s.title)
+        await insertHistory(client, url, s.priceCurrent, s.priceOld)
+
+        let changed = false
+        if (!last) {
+          changed = true
+        } else {
+          const lastPc = last.price_current
+          const lastPo = last.price_old
+
+          if (lastPc == null || s.priceCurrent == null || Number(lastPc) !== s.priceCurrent) changed = true
+
+          const lastPoValid = lastPo != null
+          const poValid = s.priceOld != null
+          if (lastPoValid !== poValid) {
+            changed = true
+          } else if (lastPoValid && poValid && Number(lastPo) !== s.priceOld) {
+            changed = true
+          }
+        }
+
+        results.push(formatOneResult({ url, scraped: s, last, changed }))
+      } catch (e) {
+        results.push(formatOneResult({ url, error: e }))
+      }
     }
-
-    lines.push(changed ? 'Изменилась с прошлого раза' : 'Без изменений')
-    lines.push(productURL)
 
     return {
       statusCode: 200,
-      body: lines.join('\n'),
+      body: results.join('\n\n---\n\n'),
     }
   } catch (e) {
     return {
