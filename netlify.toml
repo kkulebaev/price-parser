@@ -1,6 +1,0 @@
-[functions]
-  directory = "netlify/functions"
-
-# Запуск раз в день в 10:00 MSK (UTC+3) => 07:00 UTC
-[functions."price-checker"]
-  schedule = "0 7 * * *"
