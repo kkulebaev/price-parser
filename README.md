@@ -22,9 +22,9 @@ Cron-friendly price scraper that stores price history in Postgres.
 
 ## Requirements
 - Postgres database with tables already created (this app **does not** auto-migrate)
+- `product_links` table filled with URLs to scrape
 
 ## Environment variables
-- `PRODUCT_URL` (required)
 - `DATABASE_URL` (required)
 
 ## Local development
@@ -43,7 +43,6 @@ npm run dev
 ## Deploy on Netlify
 1) Connect this repo to Netlify
 2) Add environment variables in Netlify:
-   - `PRODUCT_URL`
    - `DATABASE_URL`
      - for Prisma Postgres рекомендовано: `...?sslmode=require&uselibpqcompat=true`
 3) Deploy
@@ -57,6 +56,13 @@ Current schedule:
 Create tables manually (once) in your Postgres:
 
 ```sql
+CREATE TABLE product_links (
+  id BIGSERIAL PRIMARY KEY,
+  url TEXT NOT NULL UNIQUE,
+  enabled BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 CREATE TABLE tracked_products (
   url TEXT PRIMARY KEY,
   title TEXT,
@@ -73,4 +79,7 @@ CREATE TABLE price_history (
 
 CREATE INDEX idx_price_history_url_checked_at
   ON price_history(url, checked_at DESC);
+
+-- Add links to parse:
+-- INSERT INTO product_links(url) VALUES ('https://...');
 ```
