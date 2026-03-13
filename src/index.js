@@ -103,6 +103,18 @@ async function scrape(url) {
   return { title, priceCurrent: current, priceOld: old }
 }
 
+async function listEnabledLinks(client) {
+  const r = await client.query(
+    `
+    SELECT url
+    FROM product_links
+    WHERE enabled = true
+    ORDER BY id ASC
+  `
+  )
+  return r.rows.map((x) => x.url).filter(Boolean)
+}
+
 async function getLastCheck(client, url) {
   const r = await client.query(
     `
@@ -149,21 +161,9 @@ function fmtRub(v) {
   return parts.join(' ')
 }
 
-async function listEnabledLinks(client) {
-  const r = await client.query(
-    `
-    SELECT url
-    FROM product_links
-    WHERE enabled = true
-    ORDER BY id ASC
-  `
-  )
-  return r.rows.map((x) => x.url).filter(Boolean)
-}
-
 function formatOneResult({ url, scraped, last, changed, error }) {
   if (error) {
-    return [`ERROR: ${url}`, String(error)].join('\n')
+    return [`ERROR: ${url}`, String(error && error.message ? error.message : error)].join('\n')
   }
 
   const s = scraped
@@ -187,7 +187,7 @@ function formatOneResult({ url, scraped, last, changed, error }) {
   return lines.join('\n')
 }
 
-exports.handler = async () => {
+async function runOnce() {
   const dsn = mustEnv('DATABASE_URL')
 
   const client = new Client({ connectionString: dsn })
@@ -197,10 +197,8 @@ exports.handler = async () => {
 
     const urls = await listEnabledLinks(client)
     if (urls.length === 0) {
-      return {
-        statusCode: 200,
-        body: 'SKIP: no enabled links in product_links',
-      }
+      console.log('SKIP: no enabled links in product_links')
+      return
     }
 
     const results = []
@@ -227,20 +225,13 @@ exports.handler = async () => {
       }
     }
 
-    return {
-      statusCode: 200,
-      body: results.join('\n\n---\n\n'),
-    }
-  } catch (e) {
-    return {
-      statusCode: 500,
-      body: `ERROR: ${e && e.message ? e.message : String(e)}`,
-    }
+    console.log(results.join('\n\n---\n\n'))
   } finally {
-    try {
-      await client.end()
-    } catch {
-      // ignore
-    }
+    await client.end().catch(() => {})
   }
 }
+
+runOnce().catch((e) => {
+  console.error(`ERROR: ${e && e.message ? e.message : String(e)}`)
+  process.exitCode = 1
+})

@@ -5,7 +5,6 @@
 <p align="center">
   <img alt="node" src="https://img.shields.io/badge/node-18%2B-339933?logo=node.js&logoColor=white" />
   <img alt="postgres" src="https://img.shields.io/badge/db-PostgreSQL-336791?logo=postgresql&logoColor=white" />
-  <img alt="netlify" src="https://img.shields.io/badge/deploy-Netlify-00C7B7?logo=netlify&logoColor=white" />
   <img alt="license" src="https://img.shields.io/badge/license-MIT-informational" />
 </p>
 
@@ -14,43 +13,24 @@
 Cron-friendly price scraper that stores price history in Postgres.
 
 ## What it does
-- Fetches `PRODUCT_URL`
-- Extracts current/old price (best-effort)
+- Loads URLs from `product_links`
+- Fetches each product page
+- Extracts current price (best-effort)
 - Writes to Postgres:
   - `tracked_products`
   - `price_history`
 
 ## Requirements
 - Postgres database with tables already created (this app **does not** auto-migrate)
-- `product_links` table filled with URLs to scrape
 
 ## Environment variables
 - `DATABASE_URL` (required)
 
-## Local development
-Install dependencies:
-
+## Run
 ```bash
 npm i
+npm start
 ```
-
-Run Netlify dev server:
-
-```bash
-npm run dev
-```
-
-## Deploy on Netlify
-1) Connect this repo to Netlify
-2) Add environment variables in Netlify:
-   - `DATABASE_URL`
-     - for Prisma Postgres рекомендовано: `...?sslmode=require&uselibpqcompat=true`
-3) Deploy
-
-Scheduled runs are configured in `netlify.toml` via Netlify Scheduled Functions.
-
-Current schedule:
-- **10:00 MSK (UTC+3)** → `07:00 UTC` (`0 7 * * *`)
 
 ## DB schema
 Create tables manually (once) in your Postgres:
