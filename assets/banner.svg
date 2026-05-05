@@ -1,25 +1,96 @@
-<svg width="1200" height="300" viewBox="0 0 1200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="1200" height="300" viewBox="0 0 1200 300" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="price-parser — track prices, spot real deals">
   <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1200" y2="300" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#0B1220"/>
-      <stop offset="1" stop-color="#111827"/>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="300" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0B1220"/>
+      <stop offset="1" stop-color="#0F172A"/>
     </linearGradient>
-    <linearGradient id="a" x1="200" y1="40" x2="520" y2="260" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#22C55E"/>
-      <stop offset="1" stop-color="#3B82F6"/>
+    <linearGradient id="accent" x1="80" y1="220" x2="320" y2="80" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#10B981"/>
+      <stop offset="0.5" stop-color="#06B6D4"/>
+      <stop offset="1" stop-color="#6366F1"/>
     </linearGradient>
+    <linearGradient id="title" x1="368" y1="80" x2="900" y2="180" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F9FAFB"/>
+      <stop offset="0.55" stop-color="#A7F3D0"/>
+      <stop offset="1" stop-color="#67E8F9"/>
+    </linearGradient>
+    <linearGradient id="area" x1="0" y1="100" x2="0" y2="220" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#06B6D4" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#06B6D4" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="220" cy="150" r="240" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#06B6D4" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#06B6D4" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="980" cy="60" r="280" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#6366F1" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#6366F1" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" stroke="#1F2937" stroke-width="0.5" fill="none"/>
+    </pattern>
+    <clipPath id="clipRound">
+      <rect width="1200" height="300" rx="24"/>
+    </clipPath>
   </defs>
 
-  <rect width="1200" height="300" rx="24" fill="url(#g)"/>
+  <g clip-path="url(#clipRound)">
+    <rect width="1200" height="300" fill="url(#bg)"/>
+    <rect width="1200" height="300" fill="url(#grid)" opacity="0.55"/>
+    <rect width="1200" height="300" fill="url(#glow)"/>
+    <rect width="1200" height="300" fill="url(#glow2)"/>
+  </g>
+  <rect x="0.5" y="0.5" width="1199" height="299" rx="23.5" fill="none" stroke="#1F2937" stroke-width="1"/>
 
-  <!-- abstract "price" badge -->
-  <rect x="70" y="78" width="170" height="144" rx="18" fill="#0F172A" stroke="#1F2937"/>
-  <path d="M115 182V118" stroke="url(#a)" stroke-width="10" stroke-linecap="round"/>
-  <path d="M155 182V98" stroke="url(#a)" stroke-width="10" stroke-linecap="round"/>
-  <path d="M195 182V138" stroke="url(#a)" stroke-width="10" stroke-linecap="round"/>
+  <!-- chart card -->
+  <g>
+    <rect x="80" y="68" width="240" height="164" rx="20" fill="#0F172A" stroke="#1F2937"/>
 
-  <text x="280" y="140" fill="#E5E7EB" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto" font-size="54" font-weight="700">price-parser</text>
-  <text x="280" y="188" fill="#9CA3AF" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto" font-size="24">Cron-friendly Node scraper → Turso price history</text>
+    <g transform="translate(96 84)">
+      <rect width="60" height="22" rx="11" fill="#0B1220" stroke="#1F2937"/>
+      <text x="30" y="15" text-anchor="middle" fill="#A7F3D0" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas" font-size="12" font-weight="700">−12%</text>
+    </g>
+    <text x="304" y="100" text-anchor="end" fill="#94A3B8" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto" font-size="14" font-weight="600">₽</text>
 
-  <text x="280" y="240" fill="#6B7280" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas" font-size="18">Turso • Railway Cron</text>
+    <path d="M100 138 L130 124 L160 144 L190 112 L220 158 L250 178 L290 196 L290 214 L100 214 Z"
+          fill="url(#area)"/>
+
+    <polyline points="100,138 130,124 160,144 190,112 220,158 250,178 290,196"
+              fill="none" stroke="url(#accent)" stroke-width="3.5"
+              stroke-linecap="round" stroke-linejoin="round"/>
+
+    <g fill="#0F172A" stroke="url(#accent)" stroke-width="2">
+      <circle cx="100" cy="138" r="3"/>
+      <circle cx="130" cy="124" r="3"/>
+      <circle cx="160" cy="144" r="3"/>
+      <circle cx="190" cy="112" r="3"/>
+      <circle cx="220" cy="158" r="3"/>
+      <circle cx="250" cy="178" r="3"/>
+    </g>
+    <circle cx="290" cy="196" r="6" fill="#67E8F9" opacity="0.25"/>
+    <circle cx="290" cy="196" r="3.5" fill="#67E8F9"/>
+  </g>
+
+  <!-- text -->
+  <text x="368" y="148" fill="url(#title)" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto" font-size="64" font-weight="800" letter-spacing="-1.4">price-parser</text>
+  <text x="368" y="186" fill="#94A3B8" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto" font-size="22" font-weight="500">Track prices over time. Spot real deals.</text>
+
+  <!-- tag pills -->
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas" font-size="13" font-weight="600">
+    <g transform="translate(368 218)">
+      <rect width="96" height="28" rx="14" fill="#0F172A" stroke="#1F2937"/>
+      <circle cx="14" cy="14" r="4" fill="#22C55E"/>
+      <text x="26" y="18" fill="#D1D5DB">Node 18+</text>
+    </g>
+    <g transform="translate(476 218)">
+      <rect width="76" height="28" rx="14" fill="#0F172A" stroke="#1F2937"/>
+      <circle cx="14" cy="14" r="4" fill="#4FF8D2"/>
+      <text x="26" y="18" fill="#D1D5DB">Turso</text>
+    </g>
+    <g transform="translate(564 218)">
+      <rect width="132" height="28" rx="14" fill="#0F172A" stroke="#1F2937"/>
+      <circle cx="14" cy="14" r="4" fill="#A78BFA"/>
+      <text x="26" y="18" fill="#D1D5DB">Railway cron</text>
+    </g>
+  </g>
 </svg>

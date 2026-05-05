@@ -7,7 +7,6 @@ function mustEnv(key) {
 }
 
 function decodeHTMLEntities(s) {
-  // Достаточно для заголовка на BigGeek
   return s
     .replaceAll('&quot;', '"')
     .replaceAll('&#34;', '"')
@@ -169,8 +168,8 @@ function formatOneResult({ url, scraped, last, changed, error }) {
   const s = scraped
 
   const lines = []
-  if (s.title) lines.push(`BigGeek: ${s.title}`)
-  else lines.push('BigGeek: товар')
+  if (s.title) lines.push(s.title)
+  else lines.push('товар')
 
   if (s.priceCurrent != null) lines.push(`Цена: ${fmtRub(s.priceCurrent)} ₽`)
 
