@@ -1,4 +1,4 @@
-const { Client } = require('pg')
+const { createClient } = require('@libsql/client')
 
 function mustEnv(key) {
   const v = (process.env[key] || '').trim()
@@ -104,11 +104,11 @@ async function scrape(url) {
 }
 
 async function listEnabledLinks(client) {
-  const r = await client.query(
+  const r = await client.execute(
     `
     SELECT url
     FROM product_links
-    WHERE enabled = true
+    WHERE enabled = 1
     ORDER BY id ASC
   `
   )
@@ -116,40 +116,40 @@ async function listEnabledLinks(client) {
 }
 
 async function getLastCheck(client, url) {
-  const r = await client.query(
-    `
-    SELECT price, checked_at
-    FROM price_history
-    WHERE url = $1
-    ORDER BY checked_at DESC
-    LIMIT 1
-  `,
-    [url]
-  )
+  const r = await client.execute({
+    sql: `
+      SELECT price, checked_at
+      FROM price_history
+      WHERE url = ?
+      ORDER BY checked_at DESC
+      LIMIT 1
+    `,
+    args: [url],
+  })
   if (!r.rows.length) return null
   return r.rows[0]
 }
 
 async function ensureProduct(client, url, title) {
-  await client.query(
-    `
-    INSERT INTO tracked_products(url, title)
-    VALUES ($1, $2)
-    ON CONFLICT (url) DO UPDATE
-    SET title = COALESCE(EXCLUDED.title, tracked_products.title)
-  `,
-    [url, title && title.trim() ? title : null]
-  )
+  await client.execute({
+    sql: `
+      INSERT INTO tracked_products(url, title)
+      VALUES (?, ?)
+      ON CONFLICT(url) DO UPDATE
+      SET title = COALESCE(excluded.title, tracked_products.title)
+    `,
+    args: [url, title && title.trim() ? title : null],
+  })
 }
 
 async function insertHistory(client, url, price) {
-  await client.query(
-    `
-    INSERT INTO price_history(url, price)
-    VALUES ($1, $2)
-  `,
-    [url, price ?? null]
-  )
+  await client.execute({
+    sql: `
+      INSERT INTO price_history(url, price)
+      VALUES (?, ?)
+    `,
+    args: [url, price ?? null],
+  })
 }
 
 function fmtRub(v) {
@@ -188,13 +188,12 @@ function formatOneResult({ url, scraped, last, changed, error }) {
 }
 
 async function runOnce() {
-  const dsn = mustEnv('DATABASE_URL')
+  const url = mustEnv('TURSO_DATABASE_URL')
+  const authToken = mustEnv('TURSO_AUTH_TOKEN')
 
-  const client = new Client({ connectionString: dsn })
+  const client = createClient({ url, authToken })
 
   try {
-    await client.connect()
-
     const urls = await listEnabledLinks(client)
     if (urls.length === 0) {
       console.log('SKIP: no enabled links in product_links')
@@ -227,7 +226,7 @@ async function runOnce() {
 
     console.log(results.join('\n\n---\n\n'))
   } finally {
-    await client.end().catch(() => {})
+    client.close()
   }
 }
 
