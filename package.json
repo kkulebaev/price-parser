@@ -10,6 +10,6 @@
     "lint": "node -c src/index.js"
   },
   "dependencies": {
-    "@libsql/client": "^0.15.0"
+    "@libsql/client": "^0.18.0"
   }
 }
